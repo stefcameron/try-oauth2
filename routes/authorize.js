@@ -1,12 +1,14 @@
 //--// Route: /authorize
 
-const debug = require('debug')('try-oauth2:routes/authorize');
+const debug = require('debug')('try-oauth2:routes:authorize');
 const _ = require('lodash');
+const express = require('express');
+const router = express.Router();
 const uuid = require('node-uuid');
 const ClientModel = require('../lib/models/Client');
 const AuthCodeModel = require('../lib/models/AuthCode');
 
-router.get('/authorize', (req, res, next) => {
+router.get('/', (req, res, next) => {
   const responseType = req.query.response_type || undefined;
   const clientId = req.query.client_id || undefined;
   const redirectUri = req.query.redirect_uri || undefined;
@@ -88,3 +90,5 @@ router.get('/authorize', (req, res, next) => {
     });
   });
 });
+
+module.exports = router;

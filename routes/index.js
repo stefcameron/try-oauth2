@@ -1,6 +1,6 @@
 //--// Route: /
 
-const debug = require('debug')('try-oauth2:routes/index');
+const debug = require('debug')('try-oauth2:routes:index');
 const _ = require('lodash');
 const express = require('express');
 const router = express.Router();

@@ -1,17 +1,26 @@
-var express = require('express');
-var path = require('path');
-var favicon = require('serve-favicon');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
+//--// main app
 
-var index = require('./routes/index');
-var users = require('./routes/users');
+const debug = require('debug')('try-oauth2:app');
+const express = require('express');
+const path = require('path');
+const favicon = require('serve-favicon');
+const logger = require('morgan');
+const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
+
+const index = require('./routes/index');
+const authorize = require('./routes/authorize');
 
 var app = express();
 
 const mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/book');
+mongoose.connection.on('error', (err) => {
+  debug(`ERROR (db connection): ${err.message}`);
+});
+mongoose.connection.once('open', () => {
+  debug('connected to db');
+});
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -26,7 +35,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', index);
-app.use('/users', users);
+app.use('/authorize', authorize);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
