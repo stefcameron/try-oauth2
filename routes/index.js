@@ -4,16 +4,25 @@ const debug = require('debug')('try-oauth2:routes:index');
 const _ = require('lodash');
 const express = require('express');
 const router = express.Router();
+const sanitizeHtml = require('sanitize-html');
 const ClientModel = require('../lib/models/Client');
 const libUtil = require('../lib/util');
 
-// GET /: creates a new client based on 'client_name:String', 'user_id:String',
-//  and 'domain:String' query parameters
+// GET /: creates a new client given these parameters:
+// - client_name:String Unique client (application) name.
+// - user_id:String ID of the user who owns the client/application (NOT the user
+//   granting this client access to their data upon authorization...)
+// - domain:String Domain of the client/application (must be 'host[:port]'). The
+//   redirect_uri specified during the authorization process must be within this domain.
+// - [description:String] Optional client/application description to display to
+//   the user during the authorization process.
+// TODO: this should really be a JSON-based POST request...
 router.get('/', (req, res, next) => {
   if (_.size(req.query) > 0) {
     const name = req.query.client_name || undefined;
     const userId = req.query.user_id || undefined;
     const domain = req.query.domain || undefined;
+    const description = req.query.description || undefined;
 
     if (!name || !_.isString(name)) {
       debug('INVALID: missing name');
@@ -36,7 +45,16 @@ router.get('/', (req, res, next) => {
       return;
     }
 
-    const client = new ClientModel({name, userId, domain});
+    // make sure it's a string but ignore
+    if (!_.isString(description)) {
+      if (description === null || description === undefined) {
+        description = undefined;
+      } else {
+        description = sanitizeHtml('' + description); // cast to string and sanitize
+      }
+    }
+
+    const client = new ClientModel({name, userId, domain, description});
 
     client.save((err) => {
       if (err) {
@@ -44,7 +62,7 @@ router.get('/', (req, res, next) => {
         next(new Error('client name exists already'));
       } else {
         debug('new client created: %o', client);
-        res.json(client);
+        res.json(libUtil.sanitizeModel(client));
       }
     });
   } else {
@@ -56,6 +74,7 @@ router.get('/', (req, res, next) => {
 // GET /client: get one client or list client names; optional parameters:
 //  'client_name:String'
 // TODO: this isn't proper REST... should be refactored later
+// SECURITY:
 router.get('/client', (req, res, next) => {
   if (_.size(req.query) <= 0) {
     // list clients

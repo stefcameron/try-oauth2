@@ -7,11 +7,16 @@ const favicon = require('serve-favicon');
 const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
+const sanitizeHtml = require('sanitize-html');
 
 const index = require('./routes/index');
 const authorize = require('./routes/authorize');
 
 var app = express();
+
+//
+// Mongoose Initialization
+//
 
 const mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/book');
@@ -21,6 +26,21 @@ mongoose.connection.on('error', (err) => {
 mongoose.connection.once('open', () => {
   debug('connected to db');
 });
+
+//
+// sanitize-html Initialization
+//
+
+// TODO: These allowed tags should be Client Model-specific since the app itself
+//  may require different sanitization lists for different contexts... At the
+//  moment, this satisfies the Client.description model property requirements.
+sanitizeHtml.allowedTags = ['b', 'i', 'em', 'strong', 'p', 'ol', 'ul', 'li', 'br', 'pre', 'code'];
+sanitizeHtml.allowedAttributes = {}; // none
+sanitizeHtml.selfClosing = ['br'];
+
+//
+// App Initialization
+//
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
