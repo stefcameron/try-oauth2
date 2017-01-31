@@ -71,40 +71,33 @@ router.get('/', (req, res, next) => {
       return;
     }
 
-    // TODO: render the authorization page here with requested scope... or redirect to another
-    //  route to do it?
-    res.status(500).end();
-  });
-});
+    // TODO: render the authorization page here with requested scope (or redirect to another
+    //  route to do it?) instead of just issuing the auth code right away without the user's
+    //  permission...
 
-// POST /: user either authorizes or denies access to the client
-router.post('/', (req, res, next) => {
-  // TODO: did user grant or deny access? issue auth code if they did, redirect with error if not...
-  res.status(500).end();
-  return;
+    // generate a unique auth code for this request
+    const authCode = new AuthCodeModel({
+      clientId,
+      userId: client.userId,
+      redirectUri
+    });
 
-  // generate a unique auth code for this request
-  const authCode = new AuthCodeModel({
-    clientId,
-    userId: client.userId,
-    redirectUri
-  });
-
-  authCode.save((err) => {
-    if (err) {
-      debug(`ERROR: failed to generate auth code: ${err.message}`);
-      next(new Error('failed to generate authorization code'));
-    }
-
-    if (redirectUri) {
-      const authRedirectUri = `${redirectUri}?code=${authCode.code}`;
-      if (state) {
-        authRedirectUri += `&state=${state}`;
+    authCode.save((err) => {
+      if (err) {
+        debug(`ERROR: failed to generate auth code: ${err.message}`);
+        next(new Error('failed to generate authorization code'));
       }
-      res.redirect(authRedirectUri);
-    } else {
-      res.json({state, code: authCode.code});
-    }
+
+      if (redirectUri) {
+        const authRedirectUri = `${redirectUri}?code=${authCode.code}`;
+        if (state) {
+          authRedirectUri += `&state=${state}`;
+        }
+        res.redirect(authRedirectUri);
+      } else {
+        res.json({state, code: authCode.code});
+      }
+    });
   });
 });
 
