@@ -22,7 +22,7 @@ router.get('/', (req, res, next) => {
     const name = req.query.client_name || undefined;
     const userId = req.query.user_id || undefined;
     const domain = req.query.domain || undefined;
-    const description = req.query.description || undefined;
+    let description = req.query.description || undefined;
 
     if (!name || !_.isString(name)) {
       debug('INVALID: missing name');
@@ -73,8 +73,9 @@ router.get('/', (req, res, next) => {
 
 // GET /client: get one client or list client names; optional parameters:
 //  'client_name:String'
-// TODO: this isn't proper REST... should be refactored later
-// SECURITY:
+// TODO: this isn't proper CRUD... should be refactored later as '/client/<name>'
+// SECURITY: A user should only be able to list their client and get its info; they
+//  shouldn't be able to see all clients and their secrets!
 router.get('/client', (req, res, next) => {
   if (_.size(req.query) <= 0) {
     // list clients

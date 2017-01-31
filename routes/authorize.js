@@ -16,7 +16,8 @@ const scope = require('../lib/scope');
 // - redirect_uri:string URI to redirect this request with the authorization code.
 //   Must use the 'http' or 'https' protocol and must be within the client's
 //   configured domain.
-// - [scope:string] Permission scope (defaults to PUBLIC)
+// - [scope:string] Optional requested permission scope (defaults to PUBLIC)
+// - [state:string] Optional app state, returned in redirect if specified (any value)
 router.get('/', (req, res, next) => {
   const responseType = req.query.response_type || undefined;
   const clientId = req.query.client_id || undefined;
