@@ -1,12 +1,13 @@
-//--// Route: /
+//--// Route: / (index)
 
 const debug = require('debug')('try-oauth2:routes:index');
 const _ = require('lodash');
 const express = require('express');
-const router = express.Router();
 const sanitizeHtml = require('sanitize-html');
 const ClientModel = require('../lib/models/Client');
 const libUtil = require('../lib/util');
+
+const router = express.Router();
 
 // GET /: creates a new client given these parameters:
 // - client_name:String Unique client (application) name.

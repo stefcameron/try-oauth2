@@ -12,6 +12,7 @@ const mongoose = require('mongoose');
 
 const index = require('./routes/index');
 const authorize = require('./routes/authorize');
+const token = require('./routes/token');
 
 var app = express();
 
@@ -57,6 +58,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', index);
 app.use('/authorize', authorize);
+app.use('/token', token);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

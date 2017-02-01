@@ -3,11 +3,12 @@
 const debug = require('debug')('try-oauth2:routes:authorize');
 const _ = require('lodash');
 const express = require('express');
-const router = express.Router();
 const uuid = require('node-uuid');
 const ClientModel = require('../lib/models/Client');
 const AuthCodeModel = require('../lib/models/AuthCode');
 const scope = require('../lib/scope');
+
+const router = express.Router();
 
 // GET /: allow a user to authorize a client to access their data with the requested
 //  access scope/permissions; parameters:
