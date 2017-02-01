@@ -8,6 +8,7 @@ const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const sanitizeHtml = require('sanitize-html');
+const mongoose = require('mongoose');
 
 const index = require('./routes/index');
 const authorize = require('./routes/authorize');
@@ -18,7 +19,7 @@ var app = express();
 // Mongoose Initialization
 //
 
-const mongoose = require('mongoose');
+mongoose.Promise = global.Promise; // use native ES6 Promises
 mongoose.connect('mongodb://localhost/book');
 mongoose.connection.on('error', (err) => {
   debug(`ERROR (db connection): ${err.message}`);

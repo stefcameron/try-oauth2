@@ -13,9 +13,10 @@ const scope = require('../lib/scope');
 //  access scope/permissions; parameters:
 // - response_type:string Must be 'code'.
 // - client_id:string ID of the client requesting authorization.
-// - redirect_uri:string URI to redirect this request with the authorization code.
-//   Must use the 'http' or 'https' protocol and must be within the client's
-//   configured domain.
+// - [redirect_uri:string] Optional URI to redirect this request with the
+//   authorization code. When specified, nust use the 'http' or 'https' protocol
+//   and must be within the client's configured domain. Otherwise, the request
+//   must be within the configured domain and the response is JSON.
 // - [scope:string] Optional requested permission scope (defaults to PUBLIC)
 // - [state:string] Optional app state, returned in redirect if specified (any value)
 router.get('/', (req, res, next) => {
@@ -43,10 +44,12 @@ router.get('/', (req, res, next) => {
     return;
   }
 
-  if (!redirectUri || !_.isString(redirectUri) || !redirectUri.match(/^https?\:/)) {
+  // TODO: Should the redirect URI really be optional, resulting in a JSON response
+  //  when not specified? How would user approval be obtained?
+  if (redirectUri && (!_.isString(redirectUri) || !redirectUri.match(/^https?\:/))) {
     // TODO: validate this is a properly-formatted URL, perhaps limit to 'https'
     //  and other reasonable secure protocols (excluding 'ftps' for example...)
-    debug('INVALID: missing or invalid redirect_uri: %s', redirectUri);
+    debug('INVALID: invalid redirect_uri: %s', redirectUri);
     res.status(400).send('bad request: missing or invalid redirect_uri');
     return;
   }
@@ -64,9 +67,13 @@ router.get('/', (req, res, next) => {
       return;
     }
 
-    if (redirectUri.includes(client.domain) < 0) {
-      // TODO: MUST harden this check...
-      debug(`INVALID: redirect_uri "${redirectUri}" is not within client.domain "${client.domain}"`);
+    const validateUri = redirectUri || req.hostname; // use request's hostname if no redirect
+    if (validateUri && validateUri.includes(client.domain) < 0) { // TODO: MUST harden this check...
+      if (redirectUri) {
+        debug(`INVALID: redirect_uri "${redirectUri}" is not within client.domain "${client.domain}"`);
+      } else {
+        debug(`INVALID: request hostname is not within client.domain "${client.domain}"`);
+      }
       res.status(400).end();
       return;
     }
@@ -89,10 +96,11 @@ router.get('/', (req, res, next) => {
       }
 
       if (redirectUri) {
-        const authRedirectUri = `${redirectUri}?code=${authCode.code}`;
+        let authRedirectUri = `${redirectUri}?code=${authCode.code}`;
         if (state) {
           authRedirectUri += `&state=${state}`;
         }
+        debug('redirecting to: %s', authRedirectUri);
         res.redirect(authRedirectUri);
       } else {
         res.json({state, code: authCode.code});

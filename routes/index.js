@@ -38,10 +38,10 @@ router.get('/', (req, res, next) => {
 
     // limit domain to 'host[:port]' for now
     // TODO: check proper format (NOT a URI, just a domain name), run through
-    //  blacklist, allow 'localhost' and '127.0.0.1' (any port) for local testing
-    if (!domain || !_.isString(domain) || !/^\w+(?:\:\d{1,5})?$/.test(domain)) { // localhost[:<port>]
-      debug('INVALID: missing redirect_uri');
-      res.status(400).send('bad request: missing domain');
+    //  blacklist, allow 'localhost' and '127.0.0.1' for local testing
+    if (domain !== 'localhost' && domain !== '127.0.0.1' && !libUtil.verifyFQDN(domain)) {
+      debug('INVALID: missing or invalid domain');
+      res.status(400).send('bad request: missing or invalid domain');
       return;
     }
 
