@@ -57,8 +57,8 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', index);
-app.use('/authorize', authorize);
-app.use('/token', token);
+app.use('/oauth2/authorize', authorize);
+app.use('/oauth2/token', token);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

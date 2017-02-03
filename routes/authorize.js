@@ -6,12 +6,13 @@ const express = require('express');
 const uuid = require('node-uuid');
 const ClientModel = require('../lib/models/Client');
 const AuthCodeModel = require('../lib/models/AuthCode');
-const scope = require('../lib/scope');
+const scopeType = require('../lib/scopeType');
 
 const router = express.Router();
 
 // GET /: allow a user to authorize a client to access their data with the requested
-//  access scope/permissions; parameters:
+//  access scope/permissions, responding with a temporary authorization code that
+//  must then be exchanged for a permanent access token; parameters:
 // - response_type:string Must be 'code'.
 // - client_id:string ID of the client requesting authorization.
 // - [redirect_uri:string] Optional URI to redirect this request with the
@@ -24,8 +25,11 @@ router.get('/', (req, res, next) => {
   const responseType = req.query.response_type || undefined;
   const clientId = req.query.client_id || undefined;
   const redirectUri = req.query.redirect_uri || undefined;
-  const scope = req.query.scope || scope.PUBLIC;
   const state = req.query.state || undefined;
+
+  // default to PUBLIC scope if not specified or invalid
+  const scope = _.values(scopeType).includes(req.query.scope) ?
+      req.query.scope : scopeType.PUBLIC;
 
   if (!responseType) {
     debug('INVALID: missing response_type');
@@ -47,7 +51,7 @@ router.get('/', (req, res, next) => {
 
   // TODO: Should the redirect URI really be optional, resulting in a JSON response
   //  when not specified? How would user approval be obtained?
-  if (redirectUri && (!_.isString(redirectUri) || !redirectUri.match(/^https?\:/))) {
+  if (redirectUri && (!_.isString(redirectUri) || !redirectUri.match(/^https?\:\/\//))) {
     // TODO: validate this is a properly-formatted URL, perhaps limit to 'https'
     //  and other reasonable secure protocols (excluding 'ftps' for example...)
     debug('INVALID: invalid redirect_uri: %s', redirectUri);
@@ -79,15 +83,20 @@ router.get('/', (req, res, next) => {
       return;
     }
 
-    // TODO: render the authorization page here with requested scope (or redirect to another
+    // TODO: Render the authorization page here with requested 'scope' (or redirect to another
     //  route to do it?) instead of just issuing the auth code right away without the user's
     //  permission...
+    // TODO: If the user denies access, redirect with 'error=access_denied' instead of 'code=123'
+    //  but always include the 'state' param if specified.
 
     // generate a unique auth code for this request
+    // NOTE: we may end-up generating more than one auth code for a given user/client pair,
+    //  but we'll clean them all up (consume them) upon the first one used in exchange for
+    //  an access token
     const authCode = new AuthCodeModel({
       clientId,
       userId: client.userId,
-      redirectUri
+      scope // scope granted by user
     });
 
     authCode.save((err) => {
@@ -104,15 +113,17 @@ router.get('/', (req, res, next) => {
         debug('redirecting to: %s', authRedirectUri);
         res.redirect(authRedirectUri);
       } else {
-        res.json({state, code: authCode.code});
+        // TODO: this response may be non-applicable if line 50 is changed to require a
+        //  redirect URI in order to obtain user approval...
+        const payload = {
+          state, // {string}
+          code: authCode.code // {string}
+        };
+        debug('responding with JSON: %o', payload);
+        res.json(payload);
       }
     });
   });
-});
-
-// TODO: token exchange
-router.post('/token', (req, res, next) => {
-  res.status(404).send();
 });
 
 module.exports = router;

@@ -9,6 +9,9 @@ const libUtil = require('../lib/util');
 
 const router = express.Router();
 
+// for this example, assume the following users exist
+const existingUsers = ['user1', 'user2', 'user3'];
+
 // GET /: creates a new client given these parameters:
 // - client_name:String Unique client (application) name.
 // - user_id:String ID of the user who owns the client/application (NOT the user
@@ -31,9 +34,9 @@ router.get('/', (req, res, next) => {
       return;
     }
 
-    if (!userId || !_.isString(userId)) {
-      debug('INVALID: missing user_id');
-      res.status(400).send('bad request: missing user_id');
+    if (!userId || !_.isString(userId) || !existingUsers.includes(userId)) {
+      debug('INVALID: missing/invalid user_id: %s', userId);
+      res.status(400).send('bad request: missing/invalid user_id');
       return;
     }
 
@@ -59,10 +62,10 @@ router.get('/', (req, res, next) => {
 
     client.save((err) => {
       if (err) {
-        debug('ERROR: %o', err);
+        debug('ERROR: failed to create client "%s": %s', name, err.message);
         next(new Error('client name exists already'));
       } else {
-        debug('new client created: %o', client);
+        debug('new client "%s" created', client.name);
         res.json(libUtil.sanitizeModel(client));
       }
     });
