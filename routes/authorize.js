@@ -13,18 +13,18 @@ const router = express.Router();
 // GET /: allow a user to authorize a client to access their data with the requested
 //  access scope/permissions, responding with a temporary authorization code that
 //  must then be exchanged for a permanent access token; parameters:
-// - response_type:string Must be 'code'.
-// - client_id:string ID of the client requesting authorization.
-// - [redirect_uri:string] Optional URI to redirect this request with the
+// - responseType:string Must be 'code'.
+// - clientId:string ID of the client requesting authorization.
+// - [redirectUri:string] Optional URI to redirect this request with the
 //   authorization code. When specified, nust use the 'http' or 'https' protocol
 //   and must be within the client's configured domain. Otherwise, the request
 //   must be within the configured domain and the response is JSON.
 // - [scope:string] Optional requested permission scope (defaults to PUBLIC)
 // - [state:string] Optional app state, returned in redirect if specified (any value)
 router.get('/', (req, res, next) => {
-  const responseType = req.query.response_type || undefined;
-  const clientId = req.query.client_id || undefined;
-  const redirectUri = req.query.redirect_uri || undefined;
+  const responseType = req.query.responseType || undefined;
+  const clientId = req.query.clientId || undefined;
+  const redirectUri = req.query.redirectUri || undefined;
   const state = req.query.state || undefined;
 
   // default to PUBLIC scope if not specified or invalid
@@ -32,20 +32,20 @@ router.get('/', (req, res, next) => {
       req.query.scope : scopeType.PUBLIC;
 
   if (!responseType) {
-    debug('INVALID: missing response_type');
-    res.status(400).send('bad request: missing response_type');
+    debug('INVALID: missing responseType');
+    res.status(400).send('bad request: missing responseType');
     return;
   }
 
   if (responseType !== 'code') {
     debug(`INVALID: unsupported response type: "${responseType}"`);
-    res.status(400).send('bad request: unsupported response_type');
+    res.status(400).send('bad request: unsupported responseType');
     return;
   }
 
   if (!clientId || !_.isString(clientId)) {
-    debug('INVALID: missing client_id');
-    res.status(400).send('bad request: missing client_id');
+    debug('INVALID: missing clientId');
+    res.status(400).send('bad request: missing clientId');
     return;
   }
 
@@ -54,8 +54,8 @@ router.get('/', (req, res, next) => {
   if (redirectUri && (!_.isString(redirectUri) || !redirectUri.match(/^https?\:\/\//))) {
     // TODO: validate this is a properly-formatted URL, perhaps limit to 'https'
     //  and other reasonable secure protocols (excluding 'ftps' for example...)
-    debug('INVALID: invalid redirect_uri: %s', redirectUri);
-    res.status(400).send('bad request: missing or invalid redirect_uri');
+    debug('INVALID: invalid redirectUri: %s', redirectUri);
+    res.status(400).send('bad request: missing or invalid redirectUri');
     return;
   }
 
@@ -75,7 +75,7 @@ router.get('/', (req, res, next) => {
     const validateUri = redirectUri || req.hostname; // use request's hostname if no redirect
     if (validateUri && validateUri.includes(client.domain) < 0) { // TODO: MUST harden this check...
       if (redirectUri) {
-        debug(`INVALID: redirect_uri "${redirectUri}" is not within client.domain "${client.domain}"`);
+        debug(`INVALID: redirectUri "${redirectUri}" is not within client.domain "${client.domain}"`);
       } else {
         debug(`INVALID: request hostname is not within client.domain "${client.domain}"`);
       }

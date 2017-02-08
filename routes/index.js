@@ -13,18 +13,18 @@ const router = express.Router();
 const existingUsers = ['user1', 'user2', 'user3'];
 
 // GET /: creates a new client given these parameters:
-// - client_name:String Unique client (application) name.
-// - user_id:String ID of the user who owns the client/application (NOT the user
+// - clientName:String Unique client (application) name.
+// - userId:String ID of the user who owns the client/application (NOT the user
 //   granting this client access to their data upon authorization...)
 // - domain:String Domain of the client/application (must be 'host[:port]'). The
-//   redirect_uri specified during the authorization process must be within this domain.
+//   redirectUri specified during the authorization process must be within this domain.
 // - [description:String] Optional client/application description to display to
 //   the user during the authorization process.
 // TODO: this should really be a JSON-based POST request...
 router.get('/', (req, res, next) => {
   if (_.size(req.query) > 0) {
-    const name = req.query.client_name || undefined;
-    const userId = req.query.user_id || undefined;
+    const name = req.query.clientName || undefined;
+    const userId = req.query.userId || undefined;
     const domain = req.query.domain || undefined;
     let description = req.query.description || undefined;
 
@@ -35,8 +35,8 @@ router.get('/', (req, res, next) => {
     }
 
     if (!userId || !_.isString(userId) || !existingUsers.includes(userId)) {
-      debug('INVALID: missing/invalid user_id: %s', userId);
-      res.status(400).send('bad request: missing/invalid user_id');
+      debug('INVALID: missing/invalid userId: %s', userId);
+      res.status(400).send('bad request: missing/invalid userId');
       return;
     }
 
@@ -76,7 +76,7 @@ router.get('/', (req, res, next) => {
 });
 
 // GET /client: get one client or list client names; optional parameters:
-//  'client_name:String'
+//  'clientName:String'
 // TODO: this isn't proper CRUD... should be refactored later as '/client/<name>'
 // SECURITY: A user should only be able to list their client and get its info; they
 //  shouldn't be able to see all clients and their secrets!
@@ -91,14 +91,14 @@ router.get('/client', (req, res, next) => {
         res.json(_.map(clients, 'name'));
       }
     });
-  } else if (req.query.client_name && _.isString(req.query.client_name)) {
+  } else if (req.query.clientName && _.isString(req.query.clientName)) {
     // get one client
-    ClientModel.find({name: req.query.client_name}, (err, clients) => {
+    ClientModel.find({name: req.query.clientName}, (err, clients) => {
       if (err) {
         debug('ERROR: failed to search for clients: %o', err);
         res.status(500).end();
       } else if (clients.length !== 1) {
-        debug(`client "${req.query.client_name}" not found`);
+        debug(`client "${req.query.clientName}" not found`);
         res.status(404).end();
       } else {
         res.json(libUtil.sanitizeModel(clients[0]));
