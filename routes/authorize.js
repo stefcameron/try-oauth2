@@ -28,8 +28,7 @@ router.get('/', (req, res, next) => {
   const state = req.query.state || undefined;
 
   // default to PUBLIC scope if not specified or invalid
-  const scope = _.values(scopeType).includes(req.query.scope) ?
-      req.query.scope : scopeType.PUBLIC;
+  const scope = scopeType.verify(req.query.scope) || scopeType.PUBLIC;
 
   if (!responseType) {
     debug('INVALID: missing responseType');
