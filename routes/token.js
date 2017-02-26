@@ -183,6 +183,7 @@ router.post('/', (req, res, next) => {
       }); // END: ClientModel.findOne()
     }); // END: AuthCode.findOne()
   } else {
+    // TODO: REFRESH_TOKEN
     debug('invalid grant type: %s (must be "%s")', grantType, grantKind.AUTH_CODE);
     res.status(400).end();
   }
