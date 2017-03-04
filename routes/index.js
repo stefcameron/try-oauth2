@@ -100,7 +100,9 @@ router.get('/client', (req, res, next) => {
         debug(`client "${req.query.clientName}" not found`);
         res.status(404).end();
       } else {
-        res.json(libUtil.sanitizeModel(clients[0]));
+        let json = libUtil.sanitizeModel(clients[0]);
+        json.createdAt = json.createdAt.getTime(); // convert to number (ms)
+        res.json(json);
       }
     });
   }
