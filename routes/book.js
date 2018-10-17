@@ -34,6 +34,9 @@ const booksDB = {
 
 // GET /: return partials
 router.get('/', (req, res) => {
+  // TODO: Look at the req.authAccess.scope property (added by the authAccess middleware)
+  //  to determine if the requestor has access to this data...
+
   const partials = _.map(booksDB, (book) => _.pick(book, ['id', 'title']));
   res.json(partials);
 });

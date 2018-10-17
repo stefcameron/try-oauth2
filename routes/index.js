@@ -74,8 +74,8 @@ router.post('/client', (req, res, next) => {
   });
 });
 
-// GET /client: get one client or list client names; optional parameters:
-//  'clientName:String'
+// GET /client: get one client or list client names; optional query parameters:
+//  'name:String'
 // TODO: this isn't proper CRUD... should be refactored later as '/client/<name>'
 // SECURITY: A user should only be able to list their client and get its info; they
 //  shouldn't be able to see all clients and their secrets!
@@ -90,14 +90,14 @@ router.get('/client', (req, res, next) => {
         res.json(_.map(clients, 'name'));
       }
     });
-  } else if (req.query.clientName && _.isString(req.query.clientName)) {
+  } else if (req.query.name && _.isString(req.query.name)) {
     // get one client
-    ClientModel.find({name: req.query.clientName}, (err, clients) => {
+    ClientModel.find({name: req.query.name}, (err, clients) => {
       if (err) {
         debug('ERROR: failed to search for clients: %o', err);
         res.status(500).end();
       } else if (clients.length !== 1) {
-        debug(`client "${req.query.clientName}" not found`);
+        debug(`client "${req.query.name}" not found`);
         res.status(404).end();
       } else {
         let json = libUtil.sanitizeModel(clients[0]);

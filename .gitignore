@@ -38,3 +38,7 @@ jspm_packages
 
 # IDE configurations
 .vscode/
+
+# OS files
+.DS_Store
+.Thumbs

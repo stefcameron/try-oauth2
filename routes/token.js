@@ -135,7 +135,8 @@ const grantAccessToken = function(res, client, userId, scope, existingRT) {
 // POST /: Issue an access token in exchange for an auth code, given:
 // - grantType:String Must be 'authorization_code' or 'refresh_token'
 // - clientId:String ID of the client to whom the auth code was granted
-// - clientSecret:String Client secret code issue upon client registration/creation
+// - clientSecret:String Client secret code issued upon client registration/creation
+//   (known only to the client app)
 // - [code:String] Optional auth code issued after successful user authorization
 //   when 'grantType' is 'authorization_code'
 // - [refreshToken:String] Optional refresh token if 'grantType' is set to 'refresh_token'
@@ -242,6 +243,9 @@ router.post('/', (req, res, next) => {
         res.status(400).end();
         return;
       }
+
+      // SECURITY: any existing access token should be invalidated at this point
+      //  so that the client doesn't end-up with multiple, valid access tokens
 
       // as extra security measure, validate the client ID and secret as a pair, and then
       //  make sure the refresh token being used is for this client

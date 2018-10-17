@@ -3,7 +3,6 @@
 const debug = require('debug')('try-oauth2:routes:authorize');
 const _ = require('lodash');
 const express = require('express');
-const uuid = require('node-uuid');
 const ClientModel = require('../lib/models/Client');
 const AuthCodeModel = require('../lib/models/AuthCode');
 const scopeType = require('../lib/scopeType');
@@ -16,7 +15,7 @@ const router = express.Router();
 // - responseType:string Must be 'code'.
 // - clientId:string ID of the client requesting authorization.
 // - [redirectUri:string] Optional URI to redirect this request with the
-//   authorization code. When specified, nust use the 'http' or 'https' protocol
+//   authorization code. When specified, must use the 'http' or 'https' protocol
 //   and must be within the client's configured domain. Otherwise, the request
 //   must be within the configured domain and the response is JSON.
 // - [scope:string] Optional requested permission scope (defaults to PUBLIC)
@@ -92,6 +91,8 @@ router.get('/', (req, res, next) => {
     // NOTE: we may end-up generating more than one auth code for a given user/client pair,
     //  but we'll clean them all up (consume them) upon the first one used in exchange for
     //  an access token
+    // SECURITY: consider deleting any unused auth codes here so that there's only ever one
+    //  valid auth code issued for a client+user pair at any given time
     const authCode = new AuthCodeModel({
       clientId,
       userId: client.userId,
@@ -112,7 +113,7 @@ router.get('/', (req, res, next) => {
         debug('redirecting to: %s', authRedirectUri);
         res.redirect(authRedirectUri);
       } else {
-        // TODO: this response may be non-applicable if line 50 is changed to require a
+        // TODO: this response may be non-applicable if line 52 is changed to require a
         //  redirect URI in order to obtain user approval...
         const payload = {
           state, // {string}
