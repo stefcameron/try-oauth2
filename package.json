@@ -18,7 +18,7 @@
     "mongoose": "5.13.16",
     "morgan": "1.9.1",
     "node-uuid": "1.4.8",
-    "sanitize-html": "1.27.5",
+    "sanitize-html": "2.3.2",
     "serve-favicon": "2.5.0"
   }
 }
