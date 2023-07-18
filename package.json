@@ -15,7 +15,7 @@
     "express": "4.16.4",
     "jade": "1.11.0",
     "lodash": "4.17.11",
-    "mongoose": "5.13.16",
+    "mongoose": "5.13.20",
     "morgan": "1.9.1",
     "node-uuid": "1.4.8",
     "sanitize-html": "2.3.2",
