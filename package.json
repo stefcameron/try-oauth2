@@ -9,7 +9,7 @@
     "start": "DEBUG=try-oauth2:server,try-oauth2:app npm run server"
   },
   "dependencies": {
-    "body-parser": "1.18.3",
+    "body-parser": "1.20.3",
     "cookie-parser": "1.4.3",
     "debug": "4.1.0",
     "express": "4.20.0",
